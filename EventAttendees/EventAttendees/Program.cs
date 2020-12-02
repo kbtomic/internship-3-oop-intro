@@ -44,7 +44,7 @@ namespace EventAttendees
                 Console.WriteLine("7 - exit menu");
 
 
-                bool choiceSuccess = int.TryParse(Console.ReadLine(), out choice);
+                var choiceSuccess = int.TryParse(Console.ReadLine(), out choice);
                 if (choiceSuccess)
                 {
                     switch (choice)
@@ -56,6 +56,7 @@ namespace EventAttendees
                             DeleteEvent(eventDic);
                             break;
                         case 3:
+                            EditEvent(eventDic);
                             break;
                         case 4:
                             break;
@@ -104,7 +105,7 @@ namespace EventAttendees
             }
 
             Console.WriteLine("Please insert type of event: Enter '1' for coffee, enter '2' for lecture, enter '3' for concert, enter '4' for study session!");
-            var typeOfEventSuccess = int.TryParse(Console.ReadLine(), out int choice);
+            var typeOfEventSuccess = int.TryParse(Console.ReadLine(), out var choice);
             while (!typeOfEventSuccess || choice >= 5 || choice <= 0)
             {
                 Console.WriteLine("Please insert valid number in range 1-4!");
@@ -218,9 +219,72 @@ namespace EventAttendees
                         else
                             Console.WriteLine("Event: " + nameOfDeletedEvent + " not deleted!");
                     }
-                    else
+                }
+            }
+        }
+        static void EditEvent(Dictionary<Event, List<Person>> eventDic)
+        {
+            var loopStopper = false;
+            var whatToEdit = 0;
+            while (!loopStopper)
+            {
+                Console.WriteLine("Enter 1(edit event name), enter 2(edit event type), enter 3(edit event start time), enter 4(edit event end time)");
+                var choiceSuccess = int.TryParse(Console.ReadLine(), out var choice);
+                if (choiceSuccess && choice >= 1 && choice <= 4)
+                {
+                    whatToEdit = choice;
+                    loopStopper = true;
+                }
+                else
+                    Console.WriteLine("Please enter valid number!");
+
+            }
+            Console.WriteLine("List of events: ");
+            foreach (var Event in eventDic.Keys)
+                Console.WriteLine(Event.Name);
+
+            loopStopper = false;
+            while (!loopStopper)
+            {
+                Console.WriteLine("Please enter name of the event that you want to edit: ");
+                var nameOfEditedEvent = Console.ReadLine();
+                foreach (var Event in eventDic.Keys)
+                {
+                    if (nameOfEditedEvent == Event.Name)
                     {
-                        Console.WriteLine("That name of the event is not on the list!");
+                        switch (whatToEdit)
+                        {
+                            case 1:
+                                Console.WriteLine("Please enter new name: ");
+                                var newName = Console.ReadLine();
+                                while (Event.DoesHaveSameName(newName))
+                                    newName = Console.ReadLine();
+                                Event.Name = newName;
+                                Console.WriteLine("New name is: " + newName);
+                                loopStopper = true;
+                                break;
+                            case 2:
+                                Console.WriteLine("Please enter new event type: 1(coffee), 2(lecture), 3(concert), 4(study session)");
+                                var choiceSuccess = int.TryParse(Console.ReadLine(), out var choice);
+                                while (!choiceSuccess)
+                                {
+                                    choiceSuccess = int.TryParse(Console.ReadLine(), out choice);
+                                }
+                                if (Event.TypeOfEvent == (EventType)choice)
+                                    Console.WriteLine("You didn't change type!");
+                                else
+                                {
+                                    Event.TypeOfEvent = (EventType)choice;
+                                    Console.WriteLine("New event type is: " + (EventType)choice); //pojma neman zasto ode ispise za jedan broj veci choice
+                   
+                                }
+                                loopStopper = true;
+                                break;
+                            case 3:
+                                break;
+                            case 4:
+                                break;
+                        }
                         break;
                     }
                 }
