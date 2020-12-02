@@ -7,8 +7,8 @@ namespace EventAttendees
     {
         static void Main(string[] args)
         {
-            var date = new DateTime(2020,12,01);
-            var coffeeEvent = new Event("Retro", (EventType)1, date.AddHours(20),date.AddHours(22));
+            var date = new DateTime(2020, 12, 01);
+            var coffeeEvent = new Event("Retro", (EventType)1, date.AddHours(20), date.AddHours(22));
             var lectureEvent = new Event("Sveucilisna", (EventType)2, date.AddHours(8), date.AddHours(10));
             var coffeeAttendeesList = new List<Person>()
             {
@@ -42,16 +42,18 @@ namespace EventAttendees
                 Console.WriteLine("5 - remove event attendee");
                 Console.WriteLine("6 - print event details");
                 Console.WriteLine("7 - exit menu");
-               
+
 
                 bool choiceSuccess = int.TryParse(Console.ReadLine(), out choice);
-                if(choiceSuccess)  {
+                if (choiceSuccess)
+                {
                     switch (choice)
                     {
                         case 1:
                             AddNewEvent(eventDic);
                             break;
                         case 2:
+                            DeleteEvent(eventDic);
                             break;
                         case 3:
                             break;
@@ -104,7 +106,7 @@ namespace EventAttendees
             Console.WriteLine("Please insert type of event: Enter '1' for coffee, enter '2' for lecture, enter '3' for concert, enter '4' for study session!");
             var typeOfEventSuccess = int.TryParse(Console.ReadLine(), out int choice);
             while (!typeOfEventSuccess || choice >= 5 || choice <= 0)
-            { 
+            {
                 Console.WriteLine("Please insert valid number in range 1-4!");
                 typeOfEventSuccess = int.TryParse(Console.ReadLine(), out choice);
             }
@@ -130,7 +132,7 @@ namespace EventAttendees
                         break;
                     }
                 }
-                if(uniqueEvent == 0)
+                if (uniqueEvent == 0)
                 {
                     loopStopper = true;
                 }
@@ -151,34 +153,35 @@ namespace EventAttendees
                 }
                 if (DateTime.Compare(endTimeLoop, startTime) < 0)
                     Console.WriteLine("Event can't end before it even started!");
-                else {
-                            var uniqueEvent = 0;
-                            foreach (var Event in eventDic.Keys)
-                            {
-                                if (DateTime.Compare(Event.StartTime, endTimeLoop) < 0 && DateTime.Compare(Event.EndTime, endTimeLoop) > 0)
-                                {
-                                    Console.WriteLine("There can't be more than one event in the same time! At wished moment is event" + Event.Name + " already scheduled");
-                                    uniqueEvent = 1;
-                                    break;
-                                }
-                                else if (DateTime.Compare(Event.EndTime, startTime) > 0 && DateTime.Compare(Event.StartTime, endTimeLoop) < 0)
-                                {
-                                    Console.WriteLine("There can't be more than one event in the same time! You should end earlier because event " + Event.Name + " is going to start");
-                                    uniqueEvent = 1;
-                                    break;
+                else
+                {
+                    var uniqueEvent = 0;
+                    foreach (var Event in eventDic.Keys)
+                    {
+                        if (DateTime.Compare(Event.StartTime, endTimeLoop) < 0 && DateTime.Compare(Event.EndTime, endTimeLoop) > 0)
+                        {
+                            Console.WriteLine("There can't be more than one event in the same time! At wished moment is event" + Event.Name + " already scheduled");
+                            uniqueEvent = 1;
+                            break;
                         }
-                            }
-                            if (uniqueEvent == 0)
-                            {
-                                loopStopper = true;
-                            }
+                        else if (DateTime.Compare(Event.EndTime, startTime) > 0 && DateTime.Compare(Event.StartTime, endTimeLoop) < 0)
+                        {
+                            Console.WriteLine("There can't be more than one event in the same time! You should end earlier because event " + Event.Name + " is going to start");
+                            uniqueEvent = 1;
+                            break;
                         }
+                    }
+                    if (uniqueEvent == 0)
+                    {
+                        loopStopper = true;
+                    }
+                }
                 endTime = endTimeLoop;
             }
             Console.WriteLine("Are you sure that you want this event - name: " + eventName + " type of event: " + (EventType)choice + "start time: " + startTime + " end time: " + endTime);
             Console.WriteLine("Type yes if you are sure!");
             var confirmation = Console.ReadLine();
-            if(confirmation.ToLower() == "yes")
+            if (confirmation.ToLower() == "yes")
             {
                 var newEvent = new Event(eventName, (EventType)choice, startTime, endTime);
                 eventDic.Add(newEvent, new List<Person>());
@@ -187,5 +190,41 @@ namespace EventAttendees
                 Console.WriteLine("Event not added!");
 
         }
-    }   
- }
+        static void DeleteEvent(Dictionary<Event, List<Person>> eventDic)
+        {
+            Console.WriteLine("List of events: ");
+            foreach (var Event in eventDic.Keys)
+                Console.WriteLine(Event.Name);
+
+            var loopStopper = false;
+            while (!loopStopper)
+            {
+                Console.WriteLine("Please enter name of the event that you want to delete: ");
+                var nameOfDeletedEvent = Console.ReadLine();
+                foreach (var Event in eventDic.Keys)
+                {
+                    if (nameOfDeletedEvent == Event.Name)
+                    {
+                        Console.WriteLine("Are you sure that you want to delete event: " + nameOfDeletedEvent);
+                        Console.WriteLine("Type yes if you are sure!");
+                        var confirmation = Console.ReadLine();
+                        if (confirmation.ToLower() == "yes")
+                        {
+                            eventDic.Remove(Event);
+                            Console.WriteLine("Deleted succcessfully");
+                            loopStopper = true;
+                            break;
+                        }
+                        else
+                            Console.WriteLine("Event: " + nameOfDeletedEvent + " not deleted!");
+                    }
+                    else
+                    {
+                        Console.WriteLine("That name of the event is not on the list!");
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
