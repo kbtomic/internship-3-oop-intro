@@ -75,12 +75,30 @@ namespace EventAttendees
         }
         static void AddNewEvent(Dictionary<Event, List<Person>> eventDic)
         {
-            Console.WriteLine("Please insert name of the event: ");
-            var eventName = Console.ReadLine();
-            while(string.IsNullOrEmpty(eventName))
+            var loopStopper = false;
+            var eventName = "";
+            while (!loopStopper)
             {
-                Console.WriteLine("Please insert name of the event which is not empty!");
-                eventName = Console.ReadLine();
+                Console.WriteLine("Please insert name of the event: ");
+                var eventNameLoop = Console.ReadLine();
+                while (string.IsNullOrEmpty(eventNameLoop))
+                {
+                    Console.WriteLine("Please insert name of the event which is not empty!");
+                    eventNameLoop = Console.ReadLine();
+                }
+                foreach (var Event in eventDic.Keys)
+                {
+                    if (eventNameLoop == Event.Name)
+                    {
+                        Console.WriteLine("This name already exists!");
+                        break;
+                    }
+                    else
+                    {
+                        loopStopper = true;
+                        eventName = eventNameLoop;
+                    }
+                }
             }
 
             Console.WriteLine("Please insert type of event: Enter '1' for coffee, enter '2' for lecture, enter '3' for concert, enter '4' for study session!");
@@ -92,7 +110,7 @@ namespace EventAttendees
             }
 
             var startTime = new DateTime();
-            var loopStopper = false;
+            loopStopper = false;
             while (!loopStopper)
             {
                 Console.WriteLine("Please insert start time of event. Use format yyyy/mm/dd hh:mm:ss!");
