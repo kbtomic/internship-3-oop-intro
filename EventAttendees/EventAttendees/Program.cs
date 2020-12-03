@@ -59,6 +59,7 @@ namespace EventAttendees
                             EditEvent(eventDic);
                             break;
                         case 4:
+                            AddPersonOnEvent(eventDic);
                             break;
                         case 5:
                             break;
@@ -281,14 +282,70 @@ namespace EventAttendees
                                 loopStopper = true;
                                 break;
                             case 3:
-                                break;
+                                Console.WriteLine("Please insert new start time of event. Use format yyyy/mm/dd hh:mm:ss!");
+                                var startTimeSuccess = DateTime.TryParse(Console.ReadLine(), out DateTime startTime);
+                                while (!startTimeSuccess)
+                                {
+                                    Console.WriteLine("Please insert valid start time of event. Use format yyyy/mm/dd hh:mm:ss!");
+                                    startTimeSuccess = DateTime.TryParse(Console.ReadLine(), out startTime);
+                                }
+                                var overlapping = 0;
+                                foreach (var ev in eventDic.Keys)
+                                {
+                                    if (ev != Event && ev.DoesOverlapEvent(startTime))
+                                    {
+                                        overlapping = 1;
+                                        break;
+                                    }
+                                }
+                                if(overlapping == 0)
+                                {
+                                    Event.StartTime = startTime;
+                                    Console.WriteLine("Start time changed!");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Start time did not change!");
+                                }
+                                    loopStopper = true;
+                                    break;
                             case 4:
+                                Console.WriteLine("Please insert new end time of event. Use format yyyy/mm/dd hh:mm:ss!");
+                                var endTimeSuccess = DateTime.TryParse(Console.ReadLine(), out DateTime endTime);
+                                while (!endTimeSuccess)
+                                {
+                                    Console.WriteLine("Please insert valid end time of event. Use format yyyy/mm/dd hh:mm:ss!");
+                                    endTimeSuccess = DateTime.TryParse(Console.ReadLine(), out startTime);
+                                }
+                                overlapping = 0;
+                                foreach (var ev in eventDic.Keys)
+                                {
+                                    if (ev != Event && ev.DoesOverlapEvent(endTime))
+                                    {
+                                        overlapping = 1;
+                                        break;
+                                    }
+                                }
+                                if (overlapping == 0 && endTime > Event.StartTime)
+                                {
+                                    Event.EndTime = endTime;
+                                    Console.WriteLine("End time changed!");
+                                }
+                                else
+                                {
+                                    Console.WriteLine("End time did not change!");
+                                }
+                                loopStopper = true;
                                 break;
                         }
                         break;
                     }
                 }
             }
+        }
+        static void AddPersonOnEvent(Dictionary<Event, List<Person>> eventDic)
+        {
+
         }
     }
 }
