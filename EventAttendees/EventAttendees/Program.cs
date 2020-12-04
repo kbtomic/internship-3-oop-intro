@@ -11,27 +11,31 @@ namespace EventAttendees
             var date = new DateTime(2020, 12, 01);
             var coffeeEvent = new Event("Retro", (EventType)1, date.AddHours(20), date.AddHours(22));
             var lectureEvent = new Event("Sveucilisna", (EventType)2, date.AddHours(8), date.AddHours(10));
-            var coffeeAttendeesList = new List<Person>()
+            var allAttendees = new List<Person>()
             {
                 new Person("Rafael", "Nadal", 000, 099),
                 new Person("Dominic", "Thiem", 001, 098),
-                new Person("Serena", "Williams", 002, 097)
-
-            };
-            var lectureAttendeesList = new List<Person>()
-            {
+                new Person("Serena", "Williams", 002, 097),
                 new Person("Toni", "Milun", 003, 099),
                 new Person("Ana", "Anic", 004, 099)
             };
-            var allAttendees = lectureAttendeesList.Concat(coffeeAttendeesList);
+            var coffeeAttendeesList = new List<Person>();
+            coffeeAttendeesList.Add(allAttendees[0]);
+            coffeeAttendeesList.Add(allAttendees[1]);
+            coffeeAttendeesList.Add(allAttendees[2]);
+
+            var lectureAttendeesList = new List<Person>();
+            lectureAttendeesList.Add(allAttendees[3]);
+            lectureAttendeesList.Add(allAttendees[4]);
+
             var EventDic = new Dictionary<Event, List<Person>>() {
                 { coffeeEvent, coffeeAttendeesList },
                 { lectureEvent, lectureAttendeesList }
             };
 
-            MainMenu(EventDic);
+            MainMenu(EventDic, allAttendees);
         }
-        static void MainMenu(Dictionary<Event, List<Person>> eventDic)
+        static void MainMenu(Dictionary<Event, List<Person>> eventDic, List<Person> allAttendees)
         {
             var choice = 0;
             do
@@ -61,7 +65,7 @@ namespace EventAttendees
                             EditEvent(eventDic);
                             break;
                         case 4:
-                            AddPersonOnEvent(eventDic);
+                            AddPersonOnEvent(eventDic,allAttendees);
                             break;
                         case 5:
                             break;
@@ -344,7 +348,7 @@ namespace EventAttendees
                 }
             }
         }
-        static void AddPersonOnEvent(Dictionary<Event, List<Person>> eventDic)
+        static void AddPersonOnEvent(Dictionary<Event, List<Person>> eventDic, List<Person> allAttendees)
         {
             PrintEvents(eventDic);
             Console.WriteLine("Enter name of the event on which you want to add person: ");
@@ -357,21 +361,17 @@ namespace EventAttendees
             var selectedEvent = SelectedEvent(eventDic, eventName);
             if (selectedEvent != null)
             {
-                var newPerson = new Person();
-                if (newPerson.IsPersonAlreadyGoingToEvent(eventDic, selectedEvent))
-                    Console.WriteLine("Sorry, " + newPerson.FirstName + newPerson.LastName + " is already going to event " + selectedEvent.Name);
-                else
+                Console.WriteLine("Enter 1 to add new person that is going on event, enter 2 to add one of the existing people");
+                var choiceSuccess = int.TryParse(Console.ReadLine(), out int choice);
+                while(!choiceSuccess || choice > 2 || choice < 1)
                 {
-                    foreach (var Event in eventDic.Keys)
-                    {
-                        if (selectedEvent == Event)
-                        {
-                            eventDic[selectedEvent].Add(newPerson);
-                            Console.WriteLine(newPerson.FirstName + "" + newPerson.LastName + " added to the event " + selectedEvent.Name);
-                            break;
-                        }
-                    }
+                    Console.WriteLine("Enter 1 to add new person that is going on event, enter 2 to add one of the existing people");
+                    choiceSuccess = int.TryParse(Console.ReadLine(), out choice);
                 }
+                if (choice == 1)
+                    AddNewPersonToBeAttendee(eventDic, allAttendees, selectedEvent);
+                else
+                    AddExistingPersonToBeAttendee(eventDic, allAttendees, selectedEvent);
             }
 
         }
@@ -421,6 +421,42 @@ namespace EventAttendees
             }
 
         }
+        static void AddNewPersonToBeAttendee(Dictionary<Event, List<Person>> eventDic, List<Person> allAttendees, Event eventGoingTo)
+        {
+            var newPerson = new Person();
+            eventDic[eventGoingTo].Add(newPerson);
+            allAttendees.Add(newPerson);
+            Console.WriteLine(newPerson.FirstName + " " + newPerson.LastName + " added to the event " + eventGoingTo.Name);
+        }
+        static void AddExistingPersonToBeAttendee(Dictionary<Event, List<Person>> eventDic, List<Person> allAttendees, Event eventGoingTo)
+        {
+            PrintExistingAttendees(allAttendees);
+            Console.WriteLine("Enter OIB of the person you want to become attendee: ");
+            var OIBOfNewAttendeeSuccess = int.TryParse(Console.ReadLine(), out int OIBOfNewAttendee);
+            while(!OIBOfNewAttendeeSuccess)
+            {
+                Console.WriteLine("Enter OIB of the person you want to become attendee: ");
+                OIBOfNewAttendeeSuccess = int.TryParse(Console.ReadLine(), out OIBOfNewAttendee);
+            }
+            Person existingPerson = null;
+            foreach(var person in allAttendees)
+            {
+                if (OIBOfNewAttendee == person.OIB)
+                    existingPerson = person;
+            }
+            if (existingPerson != null)
+            {
+                if (existingPerson.IsPersonAlreadyGoingToEvent(eventDic, eventGoingTo))
+                    Console.WriteLine("Sorry, " + existingPerson.FirstName + " " + existingPerson.LastName + " is already going to event " + eventGoingTo.Name);
+                else
+                {
+                    eventDic[eventGoingTo].Add(existingPerson);
+                    Console.WriteLine(existingPerson.FirstName + " " + existingPerson.LastName + " added to the event " + eventGoingTo.Name);
+                }
+            }
+            else
+                Console.WriteLine("Person with requested OIB does not exist!");
+        }
         static void PrintEvents(Dictionary<Event, List<Person>> eventDic)
         {
             Console.WriteLine("List of events: ");
@@ -451,6 +487,12 @@ namespace EventAttendees
             Console.WriteLine("List of event attendees for event " + eventName.Name);
             foreach(var person in eventDic[eventName])
                 Console.WriteLine("[" + (eventDic[eventName].IndexOf(person) + 1) + "]" + " " + person.FirstName + " " + person.LastName + " " + person.PhoneNumber);
+        }
+        static void PrintExistingAttendees(List<Person> allAttendees)
+        {
+            Console.WriteLine("List of existing attendees: ");
+            foreach(var person in allAttendees)
+                Console.WriteLine(person.FirstName + " " + person.LastName + " " + "OIB: " + person.OIB);
         }
     }
 }
