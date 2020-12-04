@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EventAttendees
 {
@@ -22,6 +23,7 @@ namespace EventAttendees
                 new Person("Toni", "Milun", 003, 099),
                 new Person("Ana", "Anic", 004, 099)
             };
+            var allAttendees = lectureAttendeesList.Concat(coffeeAttendeesList);
             var EventDic = new Dictionary<Event, List<Person>>() {
                 { coffeeEvent, coffeeAttendeesList },
                 { lectureEvent, lectureAttendeesList }
@@ -64,6 +66,7 @@ namespace EventAttendees
                         case 5:
                             break;
                         case 6:
+                            AllEventDetails(eventDic);
                             break;
                         case 7:
                             Console.WriteLine("Exit from menu!");
@@ -240,9 +243,7 @@ namespace EventAttendees
                     Console.WriteLine("Please enter valid number!");
 
             }
-            Console.WriteLine("List of events: ");
-            foreach (var Event in eventDic.Keys)
-                Console.WriteLine(Event.Name);
+            PrintEvents(eventDic);
 
             loopStopper = false;
             while (!loopStopper)
@@ -345,7 +346,111 @@ namespace EventAttendees
         }
         static void AddPersonOnEvent(Dictionary<Event, List<Person>> eventDic)
         {
+            PrintEvents(eventDic);
+            Console.WriteLine("Enter name of the event on which you want to add person: ");
+            var eventName = Console.ReadLine();
+            while (string.IsNullOrEmpty(eventName) || !DoesEventExist(eventDic, eventName))
+            {
+                Console.WriteLine("Enter name of the event on which you want to add person: ");
+                eventName = Console.ReadLine();
+            }
+            var selectedEvent = SelectedEvent(eventDic, eventName);
+            if (selectedEvent != null)
+            {
+                var newPerson = new Person();
+                if (newPerson.IsPersonAlreadyGoingToEvent(eventDic, selectedEvent))
+                    Console.WriteLine("Sorry, " + newPerson.FirstName + newPerson.LastName + " is already going to event " + selectedEvent.Name);
+                else
+                {
+                    foreach (var Event in eventDic.Keys)
+                    {
+                        if (selectedEvent == Event)
+                        {
+                            eventDic[selectedEvent].Add(newPerson);
+                            Console.WriteLine(newPerson.FirstName + "" + newPerson.LastName + " added to the event " + selectedEvent.Name);
+                            break;
+                        }
+                    }
+                }
+            }
 
+        }
+        static void AllEventDetails(Dictionary<Event, List<Person>> eventDic)
+        {
+            PrintEvents(eventDic);
+            Console.WriteLine("Enter name of the event: ");
+            var eventName = Console.ReadLine();
+            while (string.IsNullOrEmpty(eventName) && !DoesEventExist(eventDic, eventName))
+            {
+                Console.WriteLine("Enter name of the event: ");
+                eventName = Console.ReadLine();
+            }
+            var selectedEvent = SelectedEvent(eventDic, eventName);
+            if (selectedEvent != null)
+            {
+                var choice = 0;
+                do
+                {
+                    Console.WriteLine("Enter 1 for event details, enter 2 for event attendees, enter 3 for combination, enter 4 for exit this menu");
+                    var choiceSuccess = int.TryParse(Console.ReadLine(), out choice);
+                    if (choiceSuccess)
+                    {
+                        switch (choice)
+                        {
+                            case 1:
+                                selectedEvent.PrintEventDetails(eventDic);
+                                break;
+                            case 2:
+                                PrintEventAttendees(eventDic,selectedEvent);
+                                break;
+                            case 3:
+                                selectedEvent.PrintEventDetails(eventDic);
+                                PrintEventAttendees(eventDic, selectedEvent);
+                                break;
+                            case 4:
+                                Console.WriteLine("Switching to main menu!");
+                                break;
+                            default:
+                                Console.WriteLine("Wrong number! Please try again!");
+                                break;
+                        }
+                    }
+                    else
+                        Console.WriteLine("Please insert number!");
+                } while (choice != 4);
+            }
+
+        }
+        static void PrintEvents(Dictionary<Event, List<Person>> eventDic)
+        {
+            Console.WriteLine("List of events: ");
+            foreach (var Event in eventDic.Keys)
+                Console.WriteLine(Event.Name);
+        } 
+        static bool DoesEventExist(Dictionary<Event, List<Person>> eventDic, string name)
+        {
+            foreach (var Event in eventDic.Keys)
+            {
+                if(Event.Name == name)
+                return true;
+            }
+            return false;
+        }
+        static Event SelectedEvent(Dictionary<Event, List<Person>> eventDic, string name)
+        {
+            foreach (var Event in eventDic.Keys)
+            {
+                if (Event.Name == name)
+                    return Event;
+            }
+            Console.WriteLine("That event does not exist!");
+            return null;
+        }
+        static void PrintEventAttendees(Dictionary<Event, List<Person>> eventDic, Event eventName)
+        {
+            Console.WriteLine("List of event attendees for event " + eventName.Name);
+            foreach(var person in eventDic[eventName])
+                Console.WriteLine("[" + (eventDic[eventName].IndexOf(person) + 1) + "]" + " " + person.FirstName + " " + person.LastName + " " + person.PhoneNumber);
         }
     }
 }

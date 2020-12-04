@@ -39,12 +39,19 @@ namespace EventAttendees
         public bool DoesHaveSameName(string name)
         {
             if (name == Name)
-            {
                 Console.WriteLine("This name already exists!");
-                return true;
-            }
-            else
-                return false;
+
+                return (name == Name);
+        }
+       
+        public void PrintEventDetails(Dictionary<Event, List<Person>> eventDic)
+        {
+            Console.WriteLine("Name of the event is: " + Name);
+            Console.WriteLine("Event type of the event is: " + TypeOfEvent);
+            Console.WriteLine("Start time of the event is: " + StartTime);
+            Console.WriteLine("End time of the event is: " + EndTime);
+            Console.WriteLine("Event lasts: " + (EndTime - StartTime));
+            Console.WriteLine("Number of event attendees is: " + eventDic.Values.Count);
         }
     }
 }
