@@ -68,6 +68,7 @@ namespace EventAttendees
                             AddPersonOnEvent(eventDic,allAttendees);
                             break;
                         case 5:
+                            RemoveEventAttendee(eventDic, allAttendees);
                             break;
                         case 6:
                             AllEventDetails(eventDic);
@@ -86,149 +87,43 @@ namespace EventAttendees
         }
         static void AddNewEvent(Dictionary<Event, List<Person>> eventDic)
         {
-            var loopStopper = false;
-            var eventName = "";
-            while (!loopStopper)
+            var newEvent = new Event();
+            var flag = false;
+            foreach(var eventloop in eventDic.Keys)
             {
-                Console.WriteLine("Please insert name of the event: ");
-                var eventNameLoop = Console.ReadLine();
-                while (string.IsNullOrEmpty(eventNameLoop))
+                if(eventloop.DoesHaveSameName(newEvent.Name))
                 {
-                    Console.WriteLine("Please insert name of the event which is not empty!");
-                    eventNameLoop = Console.ReadLine();
-                }
-                foreach (var Event in eventDic.Keys)
-                {
-                    if (eventNameLoop == Event.Name)
-                    {
-                        Console.WriteLine("This name already exists!");
-                        break;
-                    }
-                    else
-                    {
-                        loopStopper = true;
-                        eventName = eventNameLoop;
-                    }
+                    flag = true;
+                    break;
                 }
             }
-
-            Console.WriteLine("Please insert type of event: Enter '1' for coffee, enter '2' for lecture, enter '3' for concert, enter '4' for study session!");
-            var typeOfEventSuccess = int.TryParse(Console.ReadLine(), out var choice);
-            while (!typeOfEventSuccess || choice >= 5 || choice <= 0)
+            if (!flag)
             {
-                Console.WriteLine("Please insert valid number in range 1-4!");
-                typeOfEventSuccess = int.TryParse(Console.ReadLine(), out choice);
-            }
-
-            var startTime = new DateTime();
-            loopStopper = false;
-            while (!loopStopper)
-            {
-                Console.WriteLine("Please insert start time of event. Use format yyyy/mm/dd hh:mm:ss!");
-                var startTimeSuccess = DateTime.TryParse(Console.ReadLine(), out DateTime startTimeLoop);
-                while (!startTimeSuccess)
+                if (Confirmation())
                 {
-                    Console.WriteLine("Please insert valid start time of event. Use format yyyy/mm/dd hh:mm:ss!");
-                    startTimeSuccess = DateTime.TryParse(Console.ReadLine(), out startTimeLoop);
+                    Console.WriteLine("Event added!");
+                    eventDic.Add(newEvent, new List<Person>());
                 }
-                var uniqueEvent = 0;
-                foreach (var Event in eventDic.Keys)
-                {
-                    if (DateTime.Compare(Event.StartTime, startTimeLoop) < 0 && DateTime.Compare(Event.EndTime, startTimeLoop) > 0)
-                    {
-                        Console.WriteLine("There can't be more than one event in the same time! At wished moment is event" + Event.Name + " already scheduled");
-                        uniqueEvent = 1;
-                        break;
-                    }
-                }
-                if (uniqueEvent == 0)
-                {
-                    loopStopper = true;
-                }
-                startTime = startTimeLoop;
-            }
-
-
-            var endTime = new DateTime();
-            loopStopper = false;
-            while (!loopStopper)
-            {
-                Console.WriteLine("Please insert end time of event. Use format yyyy/mm/dd hh:mm:ss!");
-                var endTimeSuccess = DateTime.TryParse(Console.ReadLine(), out DateTime endTimeLoop);
-                while (!endTimeSuccess)
-                {
-                    Console.WriteLine("Please insert valid end time of event. Use format yyyy/mm/dd hh:mm:ss!");
-                    endTimeSuccess = DateTime.TryParse(Console.ReadLine(), out endTimeLoop);
-                }
-                if (DateTime.Compare(endTimeLoop, startTime) < 0)
-                    Console.WriteLine("Event can't end before it even started!");
                 else
-                {
-                    var uniqueEvent = 0;
-                    foreach (var Event in eventDic.Keys)
-                    {
-                        if (DateTime.Compare(Event.StartTime, endTimeLoop) < 0 && DateTime.Compare(Event.EndTime, endTimeLoop) > 0)
-                        {
-                            Console.WriteLine("There can't be more than one event in the same time! At wished moment is event" + Event.Name + " already scheduled");
-                            uniqueEvent = 1;
-                            break;
-                        }
-                        else if (DateTime.Compare(Event.EndTime, startTime) > 0 && DateTime.Compare(Event.StartTime, endTimeLoop) < 0)
-                        {
-                            Console.WriteLine("There can't be more than one event in the same time! You should end earlier because event " + Event.Name + " is going to start");
-                            uniqueEvent = 1;
-                            break;
-                        }
-                    }
-                    if (uniqueEvent == 0)
-                    {
-                        loopStopper = true;
-                    }
-                }
-                endTime = endTimeLoop;
+                    Console.WriteLine("Event not added!");
             }
-            Console.WriteLine("Are you sure that you want this event - name: " + eventName + " type of event: " + (EventType)choice + "start time: " + startTime + " end time: " + endTime);
-            Console.WriteLine("Type yes if you are sure!");
-            var confirmation = Console.ReadLine();
-            if (confirmation.ToLower() == "yes")
-            {
-                var newEvent = new Event(eventName, (EventType)choice, startTime, endTime);
-                eventDic.Add(newEvent, new List<Person>());
-            }
-            else
-                Console.WriteLine("Event not added!");
-
         }
         static void DeleteEvent(Dictionary<Event, List<Person>> eventDic)
         {
-            Console.WriteLine("List of events: ");
-            foreach (var Event in eventDic.Keys)
-                Console.WriteLine(Event.Name);
-
-            var loopStopper = false;
-            while (!loopStopper)
+            PrintEvents(eventDic);
+            Console.WriteLine("Please enter name of the event that you want to delete: ");
+            var nameOfDeletedEvent = Console.ReadLine();
+            var deletedEvent = SelectedEvent(eventDic, nameOfDeletedEvent);
+            if(deletedEvent != null)
             {
-                Console.WriteLine("Please enter name of the event that you want to delete: ");
-                var nameOfDeletedEvent = Console.ReadLine();
-                foreach (var Event in eventDic.Keys)
+                if(Confirmation())
                 {
-                    if (nameOfDeletedEvent == Event.Name)
-                    {
-                        Console.WriteLine("Are you sure that you want to delete event: " + nameOfDeletedEvent);
-                        Console.WriteLine("Type yes if you are sure!");
-                        var confirmation = Console.ReadLine();
-                        if (confirmation.ToLower() == "yes")
-                        {
-                            eventDic.Remove(Event);
-                            Console.WriteLine("Deleted succcessfully");
-                            loopStopper = true;
-                            break;
-                        }
-                        else
-                            Console.WriteLine("Event: " + nameOfDeletedEvent + " not deleted!");
-                    }
+                    eventDic.Remove(deletedEvent);
+                    Console.WriteLine(deletedEvent.Name + " deleted successfully!");
                 }
-            }
+                else
+                    Console.WriteLine(deletedEvent.Name + " not deleted successfully!");
+            } 
         }
         static void EditEvent(Dictionary<Event, List<Person>> eventDic)
         {
@@ -375,6 +270,43 @@ namespace EventAttendees
             }
 
         }
+        static void RemoveEventAttendee(Dictionary<Event, List<Person>> eventDic, List<Person> allAttendees)
+        {
+            PrintEvents(eventDic);
+            Console.WriteLine("Enter name of the event from which you want to remove attendee: ");
+            var eventName = Console.ReadLine();
+            while (string.IsNullOrEmpty(eventName) || !DoesEventExist(eventDic, eventName))
+            {
+                Console.WriteLine("Enter name of the event from which you want to remove attendee: ");
+                eventName = Console.ReadLine();
+            }
+            var selectedEvent = SelectedEvent(eventDic, eventName);
+            if (selectedEvent != null)
+            {
+                PrintEventAttendeesWithOIB(eventDic, selectedEvent);
+                Console.WriteLine("Enter OIB of the person you want to remove: ");
+                var OIBOfNewAttendeeSuccess = int.TryParse(Console.ReadLine(), out int OIBOfNewAttendee);
+                while (!OIBOfNewAttendeeSuccess)
+                {
+                    Console.WriteLine("Enter OIB of the person you want to become attendee: ");
+                    OIBOfNewAttendeeSuccess = int.TryParse(Console.ReadLine(), out OIBOfNewAttendee);
+                }
+                Person removingAttendee = null;
+                foreach (var person in allAttendees)
+                {
+                    if (OIBOfNewAttendee == person.OIB)
+                        removingAttendee = person;
+                }
+                if (removingAttendee != null)
+                {
+                    eventDic[selectedEvent].Remove(removingAttendee);
+                    Console.Write("Removing: ");
+                    removingAttendee.PersonDetails();
+                }
+                else
+                    Console.WriteLine("Person with requested OIB does not exist!");
+            }
+        }
         static void AllEventDetails(Dictionary<Event, List<Person>> eventDic)
         {
             PrintEvents(eventDic);
@@ -401,11 +333,11 @@ namespace EventAttendees
                                 selectedEvent.PrintEventDetails(eventDic);
                                 break;
                             case 2:
-                                PrintEventAttendees(eventDic,selectedEvent);
+                                selectedEvent.PrintEventAttendees(eventDic);
                                 break;
                             case 3:
                                 selectedEvent.PrintEventDetails(eventDic);
-                                PrintEventAttendees(eventDic, selectedEvent);
+                                selectedEvent.PrintEventAttendees(eventDic);
                                 break;
                             case 4:
                                 Console.WriteLine("Switching to main menu!");
@@ -426,7 +358,8 @@ namespace EventAttendees
             var newPerson = new Person();
             eventDic[eventGoingTo].Add(newPerson);
             allAttendees.Add(newPerson);
-            Console.WriteLine(newPerson.FirstName + " " + newPerson.LastName + " added to the event " + eventGoingTo.Name);
+            Console.Write("Adding to event: ");
+            newPerson.PersonDetails();
         }
         static void AddExistingPersonToBeAttendee(Dictionary<Event, List<Person>> eventDic, List<Person> allAttendees, Event eventGoingTo)
         {
@@ -447,11 +380,15 @@ namespace EventAttendees
             if (existingPerson != null)
             {
                 if (existingPerson.IsPersonAlreadyGoingToEvent(eventDic, eventGoingTo))
-                    Console.WriteLine("Sorry, " + existingPerson.FirstName + " " + existingPerson.LastName + " is already going to event " + eventGoingTo.Name);
+                {
+                    existingPerson.PersonDetails();
+                    Console.WriteLine("is already going to event " + eventGoingTo.Name);
+                }
                 else
                 {
                     eventDic[eventGoingTo].Add(existingPerson);
-                    Console.WriteLine(existingPerson.FirstName + " " + existingPerson.LastName + " added to the event " + eventGoingTo.Name);
+                    Console.WriteLine("Adding to event: ");
+                    existingPerson.PersonDetails();
                 }
             }
             else
@@ -482,17 +419,26 @@ namespace EventAttendees
             Console.WriteLine("That event does not exist!");
             return null;
         }
-        static void PrintEventAttendees(Dictionary<Event, List<Person>> eventDic, Event eventName)
+        static void PrintEventAttendeesWithOIB(Dictionary<Event, List<Person>> eventDic, Event eventName)
         {
             Console.WriteLine("List of event attendees for event " + eventName.Name);
-            foreach(var person in eventDic[eventName])
-                Console.WriteLine("[" + (eventDic[eventName].IndexOf(person) + 1) + "]" + " " + person.FirstName + " " + person.LastName + " " + person.PhoneNumber);
+            foreach (var person in eventDic[eventName])
+                person.PersonDetails();
         }
         static void PrintExistingAttendees(List<Person> allAttendees)
         {
             Console.WriteLine("List of existing attendees: ");
-            foreach(var person in allAttendees)
-                Console.WriteLine(person.FirstName + " " + person.LastName + " " + "OIB: " + person.OIB);
+            foreach (var person in allAttendees)
+                person.PersonDetails();
+        }
+        static bool Confirmation()
+        {
+            Console.WriteLine("Please type yes to confirm all changes!");
+            var confirmation = Console.ReadLine();
+            if (confirmation.ToLower() == "yes")
+                return true;
+            else
+                return false;
         }
     }
 }

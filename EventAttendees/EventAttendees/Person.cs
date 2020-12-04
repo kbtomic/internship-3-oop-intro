@@ -45,7 +45,7 @@ namespace EventAttendees
 
             Console.WriteLine("Please enter last name of the person: ");
             var surname = Console.ReadLine();
-            while(string.IsNullOrEmpty(surname))
+            while (string.IsNullOrEmpty(surname))
             {
                 Console.WriteLine("Please enter last name of the person: ");
                 surname = Console.ReadLine();
@@ -71,5 +71,10 @@ namespace EventAttendees
             PhoneNumber = phoneNumber;
 
         }
+        public void PersonDetails()
+        {
+            Console.WriteLine(FirstName + " " + LastName + " " + "OIB: " + OIB + " " + "phone number: " + PhoneNumber);
+        }
+
     }
 }
