@@ -31,7 +31,7 @@ namespace EventAttendees
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
 
-        public Event EventInput(Dictionary<Event, List<Person>> eventDic)
+        public bool SuccessfullyEventNameInput(Dictionary<Event, List<Person>> eventDic)
         {
             Console.WriteLine("Please insert name of the event: ");
             var eventName = Console.ReadLine();
@@ -42,17 +42,24 @@ namespace EventAttendees
             }
             Name = eventName;
             if (DoesHaveSameName(eventDic))
-                    return null;
-
-            Console.WriteLine("Please insert type of event: Enter '1' for coffee, enter '2' for lecture, enter '3' for concert, enter '4' for study session!");
+                return false;
+            else
+                return true;
+        }
+        public bool SuccessfullyEventTypeInput(Dictionary<Event, List<Person>> eventDic)
+        {
+            Console.WriteLine("Please insert type of event: Enter '0' for coffee, enter '1' for lecture, enter '2' for concert, enter '3' for study session!");
             var typeOfEventSuccess = int.TryParse(Console.ReadLine(), out var choice);
-            while (!typeOfEventSuccess || choice >= 5 || choice <= 0)
+            while (!typeOfEventSuccess || choice > 3 || choice < 0)
             {
-                Console.WriteLine("Please insert valid number in range 1-4!");
+                Console.WriteLine("Please insert valid number in range 0-3!");
                 typeOfEventSuccess = int.TryParse(Console.ReadLine(), out choice);
             }
             TypeOfEvent = (EventType)choice;
-
+            return true;
+        }
+        public bool SuccessfullyStartAndEndTimeInput(Dictionary<Event, List<Person>> eventDic)
+        {
             Console.WriteLine("Please insert start time of event. Use format yyyy/mm/dd hh:mm:ss!");
             var startTimeSuccess = DateTime.TryParse(Console.ReadLine(), out DateTime startTime);
             while (!startTimeSuccess)
@@ -61,7 +68,7 @@ namespace EventAttendees
                 startTimeSuccess = DateTime.TryParse(Console.ReadLine(), out startTime);
             }
             StartTime = startTime;
-         
+
             Console.WriteLine("Please insert end time of event. Use format yyyy/mm/dd hh:mm:ss!");
             var endTimeSuccess = DateTime.TryParse(Console.ReadLine(), out DateTime endTime);
             while (!endTimeSuccess)
@@ -70,27 +77,33 @@ namespace EventAttendees
                 endTimeSuccess = DateTime.TryParse(Console.ReadLine(), out endTime);
             }
             EndTime = endTime;
-            
+
             if (DateTime.Compare(EndTime, StartTime) < 0)
             {
                 Console.WriteLine("Even't can't end before it even started!");
-                return null;
+                return false;
             }
             foreach (var eventloop in eventDic.Keys)
             {
                 if (DoesOverlapEvent(eventloop.EndTime))
-                    return null ;
+                    return false;
                 else if (DoesOverlapEvent(eventloop.StartTime))
-                    return null;
+                    return false;
             }
-            return new Event(Name,TypeOfEvent,StartTime,EndTime);
-
+            return true;
+        }
+       
+        public Event EventInput(Dictionary<Event, List<Person>> eventDic)
+        {
+            if(SuccessfullyEventNameInput(eventDic) && SuccessfullyEventTypeInput(eventDic) && SuccessfullyStartAndEndTimeInput(eventDic))
+                return new Event(Name,TypeOfEvent,StartTime,EndTime);
+            return null;
         }
         public bool DoesOverlapEvent(DateTime otherEventTime)
         {
             if (DateTime.Compare(StartTime, otherEventTime) < 0 && DateTime.Compare(EndTime, otherEventTime) > 0)
             {
-                Console.WriteLine("There can't be more than one event in the same time! At wished moment is event " + Name + " already scheduled");
+                Console.WriteLine("There can't be more than one event in the same time!");
                 return true;
             }
             else

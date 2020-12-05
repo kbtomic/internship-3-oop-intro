@@ -6,7 +6,7 @@ namespace EventAttendees
 {
     public class Person
     {
-        public Person(string firstName, string lastName, int _OIB, int phoneNumber)
+        public Person(string firstName, string lastName, int _OIB, string phoneNumber)
         {
             FirstName = firstName;
             LastName = lastName;
@@ -16,7 +16,7 @@ namespace EventAttendees
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public int OIB { get; set; }
-        public int PhoneNumber { get; set; }
+        public string PhoneNumber { get; set; }
 
         public Person()
         {
@@ -62,11 +62,11 @@ namespace EventAttendees
             OIB = _OIB;
 
             Console.WriteLine("Please enter phone number of the person: ");
-            var phoneNumberSuccsess = int.TryParse(Console.ReadLine(), out int phoneNumber);
-            while (!phoneNumberSuccsess)
+            var phoneNumber = Console.ReadLine();
+            while (string.IsNullOrEmpty(phoneNumber))
             {
-                Console.WriteLine("Please enter OIB of the person: ");
-                phoneNumberSuccsess = int.TryParse(Console.ReadLine(), out phoneNumber);
+                Console.WriteLine("Please enter phone number of the person: ");
+                phoneNumber = Console.ReadLine();
             }
             PhoneNumber = phoneNumber;
 
